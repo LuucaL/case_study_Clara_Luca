@@ -14,48 +14,61 @@ def login():
             st.error("Falscher Benutzername oder Passwort.")
 
 # --- Reservierungsverwaltung ---
-def reservation_management():
-    st.write("## Reservierungsverwaltung")
+def reservation_management(device_name):
+    st.write(f"## Reservierungsverwaltung für {device_name}")
     action = st.radio("Aktion auswählen", ["Anzeigen", "Hinzufügen", "Löschen"])
 
     if action == "Anzeigen":
-        st.info("Keine Reservierungen vorhanden. (Daten werden nicht gespeichert)")
+        st.info("Keine Reservierungen vorhanden.")
     elif action == "Hinzufügen":
-        device_name = st.text_input("Gerätename")
         user = st.text_input("Reserviert von")
         if st.button("Hinzufügen"):
-            st.success(f"Reservierung für {device_name} von {user} hinzugefügt. (Nicht gespeichert)")
+            st.success(f"Reservierung für {device_name} von {user} hinzugefügt.")
     elif action == "Löschen":
-        st.warning("Keine Reservierungen zu löschen. (Daten werden nicht gespeichert)")
+        st.warning("Keine Reservierungen zu löschen.")
 
 # --- Wartungsverwaltung ---
-def maintenance_management():
-    st.write("## Wartungsverwaltung")
+def maintenance_management(device_name):
+    st.write(f"## Wartungsverwaltung für {device_name}")
     action = st.radio("Aktion auswählen", ["Anzeigen", "Hinzufügen"])
 
     if action == "Anzeigen":
-        st.info("Keine Wartungspläne vorhanden. (Daten werden nicht gespeichert)")
+        st.info("Keine Wartungspläne vorhanden.")
     elif action == "Hinzufügen":
-        device_name = st.text_input("Gerätename")
         date = st.date_input("Wartungsdatum")
         notes = st.text_area("Notizen")
         if st.button("Hinzufügen"):
-            st.success(f"Wartungsplan für {device_name} am {date} hinzugefügt. (Nicht gespeichert)")
+            st.success(f"Wartungsplan für {device_name} am {date} hinzugefügt.")
 
 # --- Haupt-App ---
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
+if "selected_device" not in st.session_state:
+    st.session_state["selected_device"] = None
 
 if not st.session_state["logged_in"]:
     login()
 else:
     st.write("# Gerätemanagement")
-    section = st.radio("Bereich auswählen", ["Geräteauswahl", "Reservierungsverwaltung", "Wartungsverwaltung"])
 
-    if section == "Geräteauswahl":
-        current_device = st.selectbox(label='Gerät auswählen', options=["Gerät_A", "Gerät_B"])
-        st.write(f"Das ausgewählte Gerät ist {current_device}")
-    elif section == "Reservierungsverwaltung":
-        reservation_management()
-    elif section == "Wartungsverwaltung":
-        maintenance_management()
+    if not st.session_state["selected_device"]:
+        st.write("## Geräteauswahl")
+        st.session_state["selected_device"] = st.selectbox('Gerät auswählen', ["Gerät_A", "Gerät_B"])
+        if st.button("Gerät bestätigen"):
+            st.success(f"Gerät {st.session_state['selected_device']} ausgewählt.")
+    else:
+        st.write(f"Das ausgewählte Gerät ist {st.session_state['selected_device']}")
+
+        # Button für Gerätewechsel
+        if st.button("Gerät wechseln"):
+            st.session_state["selected_device"] = None
+            st.info("Gerät wurde zurückgesetzt. Bitte wählen Sie ein neues Gerät aus.")
+            st.stop()
+        
+        # Bereichsauswahl ohne Gerätewechsel
+        section = st.radio("Bereich auswählen", ["Reservierungsverwaltung", "Wartungsverwaltung"])
+        
+        if section == "Reservierungsverwaltung":
+            reservation_management(st.session_state["selected_device"])
+        elif section == "Wartungsverwaltung":
+            maintenance_management(st.session_state["selected_device"])
