@@ -9,7 +9,7 @@ def login():
     if st.button("Anmelden"):
         if username == "admin" and password == "1234":
             st.session_state["logged_in"] = True
-            st.success("Erfolgreich eingeloggt!")
+            st.success("Eingeloggt als " + username)
         else:
             st.error("Falscher Benutzername oder Passwort.")
 
@@ -23,6 +23,7 @@ def reservation_management(device_name):
     elif action == "Hinzufügen":
         user = st.text_input("Reserviert von")
         if st.button("Hinzufügen"):
+            date = st.date_input("Reservierungsdatum")
             st.success(f"Reservierung für {device_name} von {user} hinzugefügt.")
     elif action == "Löschen":
         st.warning("Keine Reservierungen zu löschen.")
@@ -40,6 +41,10 @@ def maintenance_management(device_name):
         if st.button("Hinzufügen"):
             st.success(f"Wartungsplan für {device_name} am {date} hinzugefügt.")
 
+def logout():
+    if st.button("Logout", type="primary"):
+        st.session_state["logged_in"] = False
+
 # --- Haupt-App ---
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
@@ -51,11 +56,14 @@ if not st.session_state["logged_in"]:
 else:
     st.write("# Gerätemanagement")
 
-    if not st.session_state["selected_device"]:
+    if st.session_state["selected_device"] is None:
         st.write("## Geräteauswahl")
-        st.session_state["selected_device"] = st.selectbox('Gerät auswählen', ["Gerät_A", "Gerät_B"])
+        # Lokale Variable zum Auswählen des Geräts
+        selected = st.selectbox('Gerät auswählen', ["Gerät_A", "Gerät_B"])
         if st.button("Gerät bestätigen"):
+            st.session_state["selected_device"] = selected
             st.success(f"Gerät {st.session_state['selected_device']} ausgewählt.")
+        logout()
     else:
         st.write(f"Das ausgewählte Gerät ist {st.session_state['selected_device']}")
 
@@ -63,8 +71,10 @@ else:
         if st.button("Gerät wechseln"):
             st.session_state["selected_device"] = None
             st.info("Gerät wurde zurückgesetzt. Bitte wählen Sie ein neues Gerät aus.")
-            st.stop()
-        
+            # Ändere die Query-Parameter, um einen Reload anzustoßen
+            st.experimental_set_query_params(reset="true")
+            st.stop()  # Stoppt den aktuellen Durchlauf hier
+
         # Bereichsauswahl ohne Gerätewechsel
         section = st.radio("Bereich auswählen", ["Reservierungsverwaltung", "Wartungsverwaltung"])
         
@@ -72,3 +82,5 @@ else:
             reservation_management(st.session_state["selected_device"])
         elif section == "Wartungsverwaltung":
             maintenance_management(st.session_state["selected_device"])
+        
+        logout()
