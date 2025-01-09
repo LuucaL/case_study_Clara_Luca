@@ -4,7 +4,7 @@
 
 ## Installation
 
-- Python Version
+- Python Version Python 3.12.4
 - Requirements installieren 'pip install -r requirements.txt
 
 ## Nutzung
@@ -17,3 +17,9 @@
 - images/mockup_login.png
 - images/mockup_reservierung.png
 - images/mockup_wartung.png
+
+## Abgabestand
+
+- 04_01_Case Study I - Mockup der UI der Geräteverwaltung: Update README.md
+- 04_02_Case Study I - Geräte- & Nutzerverwaltung: 
+- 
