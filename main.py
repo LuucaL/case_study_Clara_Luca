@@ -1,86 +1,95 @@
 import streamlit as st
+from users import User
+from devices import Device
 
-# --- Login-System ---
-def login():
-    st.write("## Login")
-    username = st.text_input("Benutzername")
-    password = st.text_input("Passwort", type="password")
-
-    if st.button("Anmelden"):
-        if username == "admin" and password == "1234":
-            st.session_state["logged_in"] = True
-            st.success("Eingeloggt als " + username)
-        else:
-            st.error("Falscher Benutzername oder Passwort.")
-
-# --- Reservierungsverwaltung ---
-def reservation_management(device_name):
-    st.write(f"## Reservierungsverwaltung für {device_name}")
+# --- User Management ---
+def user_management():
+    st.write("## Benutzerverwaltung")
     action = st.radio("Aktion auswählen", ["Anzeigen", "Hinzufügen", "Löschen"])
 
     if action == "Anzeigen":
-        st.info("Keine Reservierungen vorhanden.")
-    elif action == "Hinzufügen":
-        user = st.text_input("Reserviert von")
-        if st.button("Hinzufügen"):
-            date = st.date_input("Reservierungsdatum")
-            st.success(f"Reservierung für {device_name} von {user} hinzugefügt.")
-    elif action == "Löschen":
-        st.warning("Keine Reservierungen zu löschen.")
+        users = User.find_all()
+        if users:
+            for user in users:
+                st.write(user)
+        else:
+            st.info("Keine Benutzer vorhanden.")
 
-# --- Wartungsverwaltung ---
-def maintenance_management(device_name):
-    st.write(f"## Wartungsverwaltung für {device_name}")
-    action = st.radio("Aktion auswählen", ["Anzeigen", "Hinzufügen"])
+    elif action == "Hinzufügen":
+        name = st.text_input("Name")
+        email = st.text_input("E-Mail")
+        if st.button("Benutzer hinzufügen"):
+            new_user = User(email, name)
+            new_user.store_data()
+            st.success(f"Benutzer {name} hinzugefügt.")
+
+    elif action == "Löschen":
+        email = st.text_input("E-Mail des zu löschenden Benutzers")
+        if st.button("Benutzer löschen"):
+            user = User.find_by_attribute("id", email)
+            if user:
+                user.delete()
+                st.success(f"Benutzer {email} gelöscht.")
+            else:
+                st.error("Benutzer nicht gefunden.")
+
+# --- Device Management ---
+def device_management():
+    st.write("## Geräteverwaltung")
+    action = st.radio("Aktion auswählen", ["Anzeigen", "Hinzufügen/ Bearbeiten", "Löschen"])
 
     if action == "Anzeigen":
-        st.info("Keine Wartungspläne vorhanden.")
-    elif action == "Hinzufügen":
-        date = st.date_input("Wartungsdatum")
-        notes = st.text_area("Notizen")
-        if st.button("Hinzufügen"):
-            st.success(f"Wartungsplan für {device_name} am {date} hinzugefügt.")
+        devices = Device.find_all()
+        if devices:
+            for device in devices:
+                st.write(device)
+        else:
+            st.info("Keine Geräte vorhanden.")
 
-def logout():
-    if st.button("Logout", type="primary"):
-        st.session_state["logged_in"] = False
+    elif action == "Hinzufügen/ Bearbeiten":
+        name = st.text_input("Gerätename")
+        manager_email = st.text_input("E-Mail des Verantwortlichen")
+        if st.button("Gerät speichern"):
+            user = User.find_by_attribute("id", manager_email)
+            if user:
+                new_device = Device(name, manager_email)
+                new_device.store_data()
+                st.success(f"Gerät {name} gespeichert.")
+            else:
+                st.error("Verantwortlicher Benutzer nicht gefunden.")
 
-# --- Haupt-App ---
+    elif action == "Löschen":
+        name = st.text_input("Name des zu löschenden Geräts")
+        if st.button("Gerät löschen"):
+            device = Device.find_by_attribute("device_name", name)
+            if device:
+                device.delete()
+                st.success(f"Gerät {name} gelöscht.")
+            else:
+                st.error("Gerät nicht gefunden.")
+
+# --- Main Application ---
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
-if "selected_device" not in st.session_state:
-    st.session_state["selected_device"] = None
 
 if not st.session_state["logged_in"]:
-    login()
+    st.write("## Login")
+    username = st.text_input("Benutzername")
+    password = st.text_input("Passwort", type="password")
+    if st.button("Anmelden"):
+        if username == "admin" and password == "1234":
+            st.session_state["logged_in"] = True
+            st.success("Erfolgreich eingeloggt.")
+        else:
+            st.error("Falscher Benutzername oder Passwort.")
 else:
-    st.write("# Gerätemanagement")
+    st.write("# Verwaltungssystem")
+    section = st.radio("Bereich auswählen", ["Benutzerverwaltung", "Geräteverwaltung"])
+    if section == "Benutzerverwaltung":
+        user_management()
+    elif section == "Geräteverwaltung":
+        device_management()
 
-    if st.session_state["selected_device"] is None:
-        st.write("## Geräteauswahl")
-        # Lokale Variable zum Auswählen des Geräts
-        selected = st.selectbox('Gerät auswählen', ["Gerät_A", "Gerät_B"])
-        if st.button("Gerät bestätigen"):
-            st.session_state["selected_device"] = selected
-            st.success(f"Gerät {st.session_state['selected_device']} ausgewählt.")
-        logout()
-    else:
-        st.write(f"Das ausgewählte Gerät ist {st.session_state['selected_device']}")
+    if st.button("Logout"):
+        st.session_state["logged_in"] = False
 
-        # Button für Gerätewechsel
-        if st.button("Gerät wechseln"):
-            st.session_state["selected_device"] = None
-            st.info("Gerät wurde zurückgesetzt. Bitte wählen Sie ein neues Gerät aus.")
-            # Ändere die Query-Parameter, um einen Reload anzustoßen
-            st.experimental_set_query_params(reset="true")
-            st.stop()  # Stoppt den aktuellen Durchlauf hier
-
-        # Bereichsauswahl ohne Gerätewechsel
-        section = st.radio("Bereich auswählen", ["Reservierungsverwaltung", "Wartungsverwaltung"])
-        
-        if section == "Reservierungsverwaltung":
-            reservation_management(st.session_state["selected_device"])
-        elif section == "Wartungsverwaltung":
-            maintenance_management(st.session_state["selected_device"])
-        
-        logout()
