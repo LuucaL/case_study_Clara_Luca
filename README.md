@@ -18,8 +18,8 @@
 - images/mockup_reservierung.png
 - images/mockup_wartung.png
 
-## Abgabestand
+## Abgabestand: Commit
 
 - 04_01_Case Study I - Mockup der UI der Geräteverwaltung: Update README.md
-- 04_02_Case Study I - Geräte- & Nutzerverwaltung: 
+- 04_02_Case Study I - Geräte- & Nutzerverwaltung: Implemented user and device management
 - 
