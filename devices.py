@@ -1,5 +1,4 @@
 import os
-
 from tinydb import TinyDB, Query
 from serializer import serializer
 
@@ -53,6 +52,16 @@ class Device():
     def set_managed_by_user_id(self, managed_by_user_id: str):
         """Expects `managed_by_user_id` to be a valid user id that exists in the database."""
         self.managed_by_user_id = managed_by_user_id
+
+    
+
+    def add_maintenance(self, date, notes, user):
+        DeviceQuery = Query()
+        device_data = self.db_connector.get(DeviceQuery.device_name == self.device_name)
+        if device_data:
+            maintenance = device_data.get('maintenance', [])
+            maintenance.append({"date": str(date), "notes": notes, "user": user})
+            self.db_connector.update({"maintenance": maintenance}, doc_ids=[device_data.doc_id])    
 
     # Class method that can be called without an instance of the class to construct an instance of the class
     @classmethod
