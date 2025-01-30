@@ -23,6 +23,7 @@
 - 04_01_Case Study I - Mockup der UI der Geräteverwaltung: Update README.md
 - 04_02_Case Study I - Geräte- & Nutzerverwaltung: Implemented user and device management
 - 
+<<<<<<< HEAD
 
 ## Screenshot des UI-Mockups
 
@@ -35,3 +36,5 @@
 - 04_01_Case Study I - Mockup der UI der Geräteverwaltung: Update README.md
 - 04_02_Case Study I - Geräte- & Nutzerverwaltung: Implemented user and device management
 - 04_02_Case Study II -Wartungsverwaltung
+=======
+>>>>>>> files
